@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/fire-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wildfire AI Guard | 3D System Simulation</title>
+    <meta name="description"
+        content="Interactive 3D simulation of an AI-powered wildfire prediction and response architecture.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <!-- Modal 1: Detection Awareness -->
+    <div id="ai-modal-1" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">screenshot from our dashboard</h3>
+            <img src="/dashboard-screenshot.png" alt="Dashboard Screenshot" class="dashboard-img">
+        </div>
+        <div class="modal-footer">
+            <button id="modal-btn-1" class="next-btn">SEND DRONE</button>
+        </div>
+    </div>
+
+    <!-- Modal 2: Visual Confirmation -->
+    <div id="ai-modal-2" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">screenshot from modl predidction</h3>
+            <img src="/prediction-screenshot.png" alt="Model Prediction Screenshot" class="dashboard-img">
+        </div>
+        <div class="modal-footer">
+            <button id="modal-btn-2" class="next-btn">NEXT</button>
+        </div>
+    </div>
+
+    <!-- Modal 3: Alert Dispatch -->
+    <div id="ai-modal-3" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">fire propagation plan</h3>
+            <img src="/propagation-screenshot.jpg" alt="Fire Propagation Prediction" class="dashboard-img">
+        </div>
+        <div class="modal-footer">
+            <button id="modal-btn-3" class="next-btn">SEND ALERTS</button>
+        </div>
+    </div>
+
+    <div id="ui-overlay">
+        <div class="header">
+            <h1>WILDFIRE <span class="accent">AI</span> GUARD</h1>
+            <p>Autonomous Detection via <span style="color: var(--secondary); font-weight: 600;">5G Private
+                    Network</span></p>
+        </div>
+        <div class="controls">
+            <button id="view-forest" class="btn">Forest Monitoring</button>
+            <button id="view-hub" class="btn">AI Hub</button>
+            <button id="view-hq" class="btn">Response HQ</button>
+            <button id="view-village" class="btn">Village Safety</button>
+            <button id="trigger-fire" class="btn primary">Simulate Fire</button>
+            <button id="reset-sim" class="btn">Reset</button>
+        </div>
+        <div class="status-panel">
+            <div class="status-item">
+                <span class="label">NETWORK:</span>
+                <span class="value online">5G PRIVATE</span>
+            </div>
+            <div class="status-item">
+                <span class="label">DRONE PATROL:</span>
+                <span class="value online">ACTIVE</span>
+            </div>
+            <div class="status-item">
+                <span class="label">AI PREDICTION:</span>
+                <span class="value" id="ai-status">MONITORING</span>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
