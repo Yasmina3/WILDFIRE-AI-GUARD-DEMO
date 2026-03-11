@@ -212,7 +212,37 @@ class WildfireSimulation {
         this.fireLight.position.set(15, 5, 10);
         group.add(this.fireLight);
 
+        this.createSensors(group);
         this.forestZone = group;
+    }
+
+    createSensors(parentGroup) {
+        this.sensors = [];
+        const sensorGeom = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 8);
+        const sensorMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+
+        for (let i = 0; i < 7; i++) { // Reduced to 7
+            const sensor = new THREE.Group();
+            const base = new THREE.Mesh(sensorGeom, sensorMat);
+            sensor.add(base);
+
+            const light = new THREE.PointLight(0x00ff88, 0, 5);
+            light.position.y = 0.5;
+            sensor.add(light);
+            sensor.statusLight = light;
+
+            const label = this.createSmallLabel("SENSOR");
+            label.position.set(0, 1.2, 0);
+            sensor.add(label);
+
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 10 + Math.random() * 25;
+            sensor.position.set(Math.cos(angle) * radius, 0.15, Math.sin(angle) * radius);
+            sensor.scale.setScalar(1); // Permanently visible
+
+            parentGroup.add(sensor);
+            this.sensors.push(sensor);
+        }
     }
 
     createTree() {
@@ -288,7 +318,22 @@ class WildfireSimulation {
         div.textContent = text;
         div.style.fontSize = '8px';
         div.style.padding = '2px 6px';
+        div.style.background = 'rgba(0, 212, 255, 0.6)'; // Blue-ish for sensors
         return new CSS2DObject(div);
+    }
+
+    createDataLabel(text, x, y, z) {
+        const div = document.createElement('div');
+        div.className = 'label-container data-label';
+        div.textContent = text;
+        div.style.fontSize = '10px';
+        div.style.padding = '4px 10px';
+        div.style.background = 'rgba(0, 255, 136, 0.8)'; // Green for data
+        div.style.color = '#000';
+        div.style.fontWeight = 'bold';
+        const label = new CSS2DObject(div);
+        label.position.set(x, y, z);
+        return label;
     }
 
     createTower() {
@@ -436,20 +481,38 @@ class WildfireSimulation {
 
     createSatellite() {
         this.satGroup = new THREE.Group();
-        this.satGroup.position.set(-60, 80, -20);
+        this.satGroup.position.set(-35, 45, -10); // closer to scene
         this.scene.add(this.satGroup);
 
-        const body = new THREE.Mesh(new THREE.BoxGeometry(4, 2, 2), new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8, roughness: 0.2 }));
+        const body = new THREE.Mesh(
+            new THREE.BoxGeometry(4, 2, 2),
+            new THREE.MeshStandardMaterial({
+                color: 0x888888,
+                metalness: 0.8,
+                roughness: 0.2
+            })
+        );
         this.satGroup.add(body);
 
         this.satBeam = new THREE.Mesh(
-            new THREE.ConeGeometry(10, 80, 4, 1, true),
-            new THREE.MeshBasicMaterial({ color: 0x00ff88, transparent: true, opacity: 0.1, side: THREE.DoubleSide })
+            new THREE.ConeGeometry(8, 40, 4, 1, true),
+            new THREE.MeshBasicMaterial({
+                color: 0x00ff88,
+                transparent: true,
+                opacity: 0.1,
+                side: THREE.DoubleSide
+            })
         );
-        this.satBeam.position.y = -40;
+        this.satBeam.position.y = -20;
         this.satGroup.add(this.satBeam);
 
-        gsap.to(this.satGroup.position, { x: 60, duration: 20, repeat: -1, yoyo: true, ease: "none" });
+        gsap.to(this.satGroup.position, {
+            x: 35,
+            duration: 20,
+            repeat: -1,
+            yoyo: true,
+            ease: "none"
+        });
     }
 
     createCommunicationLinks() {
@@ -534,16 +597,67 @@ class WildfireSimulation {
 
     simulateDetection() {
         const btn = document.getElementById('trigger-fire');
-
         btn.disabled = true;
-        this.updateStatus('ANALYZING RISK...', 'value alert');
 
-        // 1. Zoom to Processing Unit first to show the plan
-        this.focusOnProcessingUnit();
+        this.updateStatus('COLLECTING DATA...', 'value alert');
+
+        // 1. Focus on forest more closely to see sensors
+        this.focusOn(-80, 25, 40);
+
+        // 2. Pulse sensor lights
+        this.sensors.forEach((s, i) => {
+            gsap.to(s.statusLight, {
+                intensity: 2,
+                duration: 0.5,
+                repeat: 3,
+                yoyo: true,
+                delay: i * 0.1
+            });
+        });
 
         setTimeout(() => {
-            this.showModal('ai-modal-1');
-        }, 2200);
+            this.updateStatus('TRANSMITTING DATA...', 'value alert');
+
+            // Add Data Labels
+            const iotLabel = this.createDataLabel("DATA FROM IOT SENSORS", -80, 20, 0);
+            const satLabel = this.createDataLabel("SATELLITE TELEMETRY", this.satGroup.position.x, this.satGroup.position.y - 10, this.satGroup.position.z);
+            this.scene.add(iotLabel);
+            this.scene.add(satLabel);
+
+            // 3. Send data from all sensors to Hub (Slower: 3.5s)
+            this.sensors.forEach((s, i) => {
+                this.sendData(s, this.hubGroup, 0x00ff88, 3.5, i * 0.1);
+            });
+
+            // 4. Send data from Satellite to Hub (Slower: 3.5s)
+            this.sendData(this.satGroup, this.hubGroup, 0x00ff88, 3.5);
+
+            // 5. De-zoom to see Forest + Satellite
+            gsap.to(this.camera.position, {
+                x: 0, y: 120, z: 150,
+                duration: 4,
+                ease: "power2.inOut",
+                onUpdate: () => this.controls.update()
+            });
+            gsap.to(this.controls.target, {
+                x: 0, y: 0, z: 0,
+                duration: 4,
+                ease: "power2.inOut"
+            });
+
+            setTimeout(() => {
+                // Remove data labels
+                this.scene.remove(iotLabel);
+                this.scene.remove(satLabel);
+
+                this.updateStatus('ANALYZING RISK...', 'value alert');
+                this.focusOnProcessingUnit();
+
+                setTimeout(() => {
+                    this.showModal('ai-modal-1');
+                }, 2200);
+            }, 5000); // Increased wait for slower pulses
+        }, 1000);
     }
 
     igniteFireAndDispatch() {
@@ -631,9 +745,9 @@ class WildfireSimulation {
         }
     }
 
-    sendData(from, to, color) {
-        for (let i = 0; i < 5; i++) {
-            const p = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), new THREE.MeshBasicMaterial({ color }));
+    sendData(from, to, color, duration = 1, delayOffset = 0) {
+        for (let i = 0; i < 3; i++) {
+            const p = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), new THREE.MeshBasicMaterial({ color }));
             this.scene.add(p);
             const start = new THREE.Vector3();
             const end = new THREE.Vector3();
@@ -644,8 +758,8 @@ class WildfireSimulation {
                 { x: start.x, y: start.y, z: start.z },
                 {
                     x: end.x, y: end.y, z: end.z,
-                    duration: 1,
-                    delay: i * 0.2,
+                    duration: duration,
+                    delay: delayOffset + (i * 0.2),
                     ease: "power2.in",
                     onComplete: () => {
                         this.scene.remove(p);
@@ -721,6 +835,12 @@ class WildfireSimulation {
         this.drones.forEach((drone, i) => {
             gsap.killTweensOf(drone.position);
             this.animateDrone(drone, i);
+        });
+
+        // Reset Sensors
+        this.sensors.forEach(s => {
+            gsap.killTweensOf(s.statusLight);
+            s.statusLight.intensity = 0;
         });
 
         // Reset HUD and Camera
