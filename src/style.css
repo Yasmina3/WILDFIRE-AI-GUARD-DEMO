@@ -46,30 +46,7 @@ html {
   box-sizing: border-box;
 }
 
-.header {
-  pointer-events: auto;
-}
 
-.header h1 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin: 0;
-  letter-spacing: 4px;
-  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  color: #1a1a1a;
-}
-
-h1 .accent {
-  color: var(--primary);
-  text-shadow: 0 0 20px var(--primary-glow);
-}
-
-.header p {
-  margin: 5px 0 0;
-  color: var(--text-dim);
-  font-weight: 300;
-  letter-spacing: 1px;
-}
 
 .controls {
   position: absolute;
@@ -123,59 +100,7 @@ h1 .accent {
   box-shadow: 0 0 15px rgba(255, 51, 0, 0.4);
 }
 
-.status-panel {
-  position: absolute;
-  top: 40px;
-  right: 40px;
-  background: var(--glass);
-  padding: 20px;
-  border-radius: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  pointer-events: auto;
-  width: 200px;
-}
 
-.status-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  font-size: 0.8rem;
-}
-
-.status-item:last-child {
-  margin-bottom: 0;
-}
-
-.status-item .label {
-  color: var(--text-dim);
-  font-weight: 600;
-}
-
-.status-item .value {
-  color: var(--secondary);
-  font-weight: 800;
-}
-
-.status-item .value.online {
-  color: #00ff88;
-}
-
-.status-item .value.alert {
-  color: #ff3300;
-  animation: blink 0.5s infinite alternate;
-}
-
-@keyframes blink {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0.5;
-  }
-}
 
 /* 3D Label Styles */
 .label-container {

@@ -124,10 +124,15 @@ class WildfireSimulation {
 
         const patch = new THREE.Mesh(
             new THREE.CircleGeometry(40, 32),
-            new THREE.MeshStandardMaterial({ color: 0x1e3a1a })
+            new THREE.MeshStandardMaterial({
+                color: 0x1e3a1a,
+                polygonOffset: true,
+                polygonOffsetFactor: -1,
+                polygonOffsetUnits: -1
+            })
         );
         patch.rotation.x = -Math.PI / 2;
-        patch.position.y = 0.01;
+        patch.position.y = 0.1; // Increased offset
         patch.receiveShadow = true;
         group.add(patch);
 
@@ -188,10 +193,18 @@ class WildfireSimulation {
 
         this.fireSpread = new THREE.Mesh(
             new THREE.CircleGeometry(1, 32),
-            new THREE.MeshBasicMaterial({ color: COLORS.fire, transparent: true, opacity: 0.3 })
+            new THREE.MeshBasicMaterial({
+                color: COLORS.fire,
+                transparent: true,
+                opacity: 0.3,
+                depthWrite: false, // Prevents Z-fighting with other transparent objects
+                polygonOffset: true,
+                polygonOffsetFactor: -2,
+                polygonOffsetUnits: -2
+            })
         );
         this.fireSpread.rotation.x = -Math.PI / 2;
-        this.fireSpread.position.y = 0.05;
+        this.fireSpread.position.y = 0.15;
         this.fireGroup.add(this.fireSpread);
 
         // Core glow
@@ -309,10 +322,15 @@ class WildfireSimulation {
 
         const patch = new THREE.Mesh(
             new THREE.PlaneGeometry(60, 80),
-            new THREE.MeshStandardMaterial({ color: 0x333333 })
+            new THREE.MeshStandardMaterial({
+                color: 0x333333,
+                polygonOffset: true,
+                polygonOffsetFactor: -1,
+                polygonOffsetUnits: -1
+            })
         );
         patch.rotation.x = -Math.PI / 2;
-        patch.position.y = 0.01;
+        patch.position.y = 0.1; // Increased offset
         group.add(patch);
 
         this.hqBuilding = new THREE.Mesh(
@@ -341,10 +359,15 @@ class WildfireSimulation {
 
         const patch = new THREE.Mesh(
             new THREE.CircleGeometry(40, 32),
-            new THREE.MeshStandardMaterial({ color: 0x223311 })
+            new THREE.MeshStandardMaterial({
+                color: 0x223311,
+                polygonOffset: true,
+                polygonOffsetFactor: -1,
+                polygonOffsetUnits: -1
+            })
         );
         patch.rotation.x = -Math.PI / 2;
-        patch.position.y = 0.01;
+        patch.position.y = 0.1; // Increased offset
         group.add(patch);
 
         for (let i = 0; i < 15; i++) {
@@ -510,12 +533,10 @@ class WildfireSimulation {
     }
 
     simulateDetection() {
-        const status = document.getElementById('ai-status');
         const btn = document.getElementById('trigger-fire');
 
         btn.disabled = true;
-        status.textContent = 'ANALYZING RISK...';
-        status.className = 'value alert';
+        this.updateStatus('ANALYZING RISK...', 'value alert');
 
         // 1. Zoom to Processing Unit first to show the plan
         this.focusOnProcessingUnit();
@@ -526,8 +547,7 @@ class WildfireSimulation {
     }
 
     igniteFireAndDispatch() {
-        const status = document.getElementById('ai-status');
-        status.textContent = 'FIRE IGNITION!';
+        this.updateStatus('FIRE IGNITION!');
 
         // 2. Zoom to Forest to show the fire starting
         this.focusOn(-50, 30, 60, -55, 0, 25);
@@ -544,8 +564,7 @@ class WildfireSimulation {
     }
 
     dispatchDrone() {
-        const status = document.getElementById('ai-status');
-        status.textContent = 'DISPATCHING DRONE...';
+        this.updateStatus('DISPATCHING DRONE...');
 
         const activeDrone = this.drones[0];
         gsap.killTweensOf(activeDrone.position);
@@ -567,12 +586,12 @@ class WildfireSimulation {
                 duration: 4,
                 ease: "power2.inOut",
                 onComplete: () => {
-                    status.textContent = 'CAPTURING FIRE IMAGES...';
+                    this.updateStatus('CAPTURING FIRE IMAGES...');
                     const flash = activeDrone.children.find(c => c.type === 'PointLight');
                     gsap.to(flash, { intensity: 15, duration: 0.1, repeat: 5, yoyo: true });
 
                     setTimeout(() => {
-                        status.textContent = 'SENDING CONFIRMATION...';
+                        this.updateStatus('SENDING CONFIRMATION...');
                         this.sendData(activeDrone, this.hubGroup, 0xffffff);
 
                         setTimeout(() => {
@@ -592,17 +611,24 @@ class WildfireSimulation {
     }
 
     completeSimulation() {
-        const status = document.getElementById('ai-status');
-        status.textContent = 'SENDING ALERTS...';
+        this.updateStatus('SENDING ALERTS...');
 
         // Red alerts to Village and HQ
         this.sendAlertData(this.hubGroup, this.hqBuilding, COLORS.alert);
         this.sendAlertData(this.hubGroup, this.villageZone, COLORS.alert);
 
         setTimeout(() => {
-            status.textContent = 'RESPONSE DISPATCHED';
+            this.updateStatus('RESPONSE DISPATCHED');
             this.triggerVisualAlerts();
         }, 2000);
+    }
+
+    updateStatus(text, className = 'value') {
+        const status = document.getElementById('ai-status');
+        if (status) {
+            status.textContent = text;
+            status.className = className;
+        }
     }
 
     sendData(from, to, color) {
@@ -679,7 +705,6 @@ class WildfireSimulation {
     }
 
     resetSimulation() {
-        const status = document.getElementById('ai-status');
         const btn = document.getElementById('trigger-fire');
 
         // Hide any open modals
@@ -699,8 +724,7 @@ class WildfireSimulation {
         });
 
         // Reset HUD and Camera
-        status.textContent = 'MONITORING';
-        status.className = 'value';
+        this.updateStatus('MONITORING');
         btn.disabled = false;
         this.focusOn(100, 80, 100);
 
