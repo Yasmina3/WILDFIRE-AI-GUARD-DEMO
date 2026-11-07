@@ -1,6 +1,7 @@
 # 🌲 Wildfire AI Guard | 3D System Simulation
 
 This repository contains a **highly interactive 3D simulation** designed to demonstrate the end-to-end narrative of the Wildfire AI Guard detection and response architecture.
+Deployed in : https://yasmina3.github.io/WILDFIRE-AI-GUARD-DEMO/
 
 > [!IMPORTANT]
 > **Demo Purpose**: This is a **demonstration tool** and not the production system or the operational dashboard itself. It is designed for presentations to show how the various components (5G Networks, AI Hubs, Drones, and Response HQ) communicate during a wildfire event.
